@@ -1,0 +1,7 @@
+images/
+*.aux
+*.bbl
+*.blg
+*.log
+*.pdf
+*.toc
