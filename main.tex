@@ -77,9 +77,12 @@ As later research proposes efficient calibration method using 3D points from onl
 	The drawback of these two patterns is that the detected corners or dots are ambiguous do not have descriptors. To match the detected image points with the corresponding pattern points, current automatic pattern detector detects grid structure of a given size from the detected features. This scheme requires that all the corners or dots must be detectable in the image. Thus the detector can not handle the cases when the pattern is partly visible. As mentioned in section \ref{}, this limit makes the chessboard and dot pattern not suitable for calibrating many multiple-camera systems. In addition, the detection might fail when the feature density is very high, since in this case it is difficult to detect all features on the pattern. 
 	\item \textit{Pattern with spatial coded features} The ambiguity of the features on the calibration pattern can be solved by assigning each feature a code. Figure \ref{} shows an example of a spatial code compose by 2D ?bar code?. Some research about the code design can be found from \cite{}. Using coded features, detected image features can be matched to their corresponding pattern features easily by matching the codes. Thus the pattern is not required to be entirely visible in the image. The drawback of the 2D ?bar code? is that the bar detection assumes a perspective camera model, which is not suitable when calibrating a camera with high distortion. In addition, the features on the pattern can not be dense as the ?bar codes? have to be large enough and well separated to be detected. 
 	\item \textit{Pattern with temporal coded features} In contrast with the spatial coded features, it is also possible to code feature on the calibration pattern by temporal code. The temporal code is widely in the research of structured light. For example, \cite{} proposes a well-known method to use temporal coded features to generate stereo vision benchmark. The same idea can be applied for camera calibration. In \cite{}, a display screen is used to display the calibration pattern. The brightness of each point on the display is changing according to a unique code. For each camera pose, a sequence of images are taken to receive the entire temporal code. Then the features are matching by comparing the code. The advantage of the temporal code is that the feature density can be very high. However, using the temporal pattern in calibration is not very convenient. It requires a monitor or a projector to display the pattern, a tripod to fix the camera and many more images to be taken to receive the code. 
-	\item \textit{Random dots pattern with ?Geometrical? coded features} \cite{} shows that if dots are randomly distributed on the calibration pattern, the local dots distribution can be used to identify the feature correspondence. Figure \ref{} shows an example of this random dot pattern. Some geometric invariance is computed as a descriptor for each dot from the local nearest dot set around it. The drawback of this method is the poor robustness under significant camera distortion. 
-	\item \textit{Calibration pattern with low rank structure}
+	\item \textit{Random dots pattern with ?Geometrical? coded features} \cite{oyamadasingle} shows that if dots are randomly distributed on the calibration pattern, the local dots distribution can be used to identify the feature correspondence. Figure \ref{} shows an example of this random dot pattern. Some geometric invariance is computed as a descriptor for each dot from the local nearest dot set around it. The drawback of this method is the poor robustness under significant camera distortion. 
+	\item \textit{Calibration pattern with low rank structure} \cite{} proposes a novel calibration method which does not require any specific calibration pattern. The method can calibrate a camera using any pattern with low rank texture. For example, periodic rectangular structures such as chessboards and building facets can all be used. The method searches for an optimal camera parameters so that the rank of the reprojected pattern is minimized. This method is convenient for scenarios where no calibration object is available. The drawback is that the calibration accuracy is affected by the quality of the selected pattern and that manual selection for the pattern area is required. 
 \end{itemize}
+
+In this paper, we seek to design a new calibration pattern to improve the drawbacks of the above patterns. The new pattern is required to have the following properties: 1) The feature can be located accurately on an image; 2) The feature can be automatically detected easily; 3) The feature point is coupled with a distinguishable descriptor so that correspondences can be matched easily even with occlusion; 3) The pattern consists of sufficient features; 4) The pattern should be easy to be displayed or printed on a normal board. A pattern with such properties is very useful for calibrating multiple-camera system with minimal overlapping field of view. This the following sections in this chapter, we shows that a pattern which consist of SIFT features \cite{lowe2004distinctive} is a good design fulfilling the above requirements. 
+
 
 \begin{figure}
 \centering
@@ -153,11 +156,11 @@ This case could be detected by automatic model selection methods like the GRIC c
 \section{Introduction}
 %TODO 0. DLT method; 1. Zhang's model; 2. Scaramuzza and Mei. 
 
-
 \label{singleSec}
-A single-camera calibration estimates the camera intrinsics and the poses of the calibration pattern with respect to the camera's coordinate system. This data from the single-camera calibration is used by the multiple-camera extrinsic calibration. 
-\section{Camera Model}
-\subsection{Pinhole Camera Model}
+A single-camera calibration estimates the camera intrinsics and the poses of the calibration pattern with respect to the camera's coordinate system. Methods for calibrating a single camera have been well studied in the past decades. The calibrated camera intrinsics and pattern poses for each single cameras can then be used in calibrating the multiple-camera system formed by these single cameras. 
+
+\subsection{Camera Model}
+\subsubsection{Pinhole Camera Model}
 We consider the mostly commonly used pinhole camera projection model first and introduces the notations. A homogeneous 3D point $(X, Y, Z, 1)$ is projected onto a homogeneous image point $(u, v, 1)^\top$ via: 
 \begin{eqnarray}
 \begin{bmatrix}
@@ -244,12 +247,14 @@ where $\gamma_1$ and $\gamma_2$ are the focal lengths of horizontal and vertical
 
 Details about the pinhole camera model can be found from \cite{hartley2000multiple}. Details about the distortion model can be found from \cite{}. 
 
-\subsection{Extension for Generic Cameras}
+\subsubsection{Extension for Generic Cameras}
 We can easily extend the above pinhole camera model to generic cameras. Firstly consider a ideal camera with focal length $\gamma$, principal point $(0, 0)^\top$, and without distortion. An image point $(u, v, 1)^\top$ corresponds to a ray with direction $(u, v, f(u, v))^\top$ which goes through the origin of the camera's coordinate system. This ray definition unifies the various projection models via different definitions of $f(u, v)$. For the pinhole projection model, the corresponding ray is $(u, v, \gamma) \sim (x', y', 1)$. Thus we have: 
 \begin{equation}
 f(u, v) \equiv \gamma
 \label{pinholeEqn}
 \end{equation}
+
+
 For the unified projection model with its lens distortion parameter $\xi = 1$,
 \begin{equation}
 f(u, v) = \frac{\gamma}{2} - \frac{1}{2 \gamma} \rho^2
@@ -262,7 +267,7 @@ f(u, v) = a_0 + \cdots + a_n \rho^n
 \end{equation}
 Equation \ref{polynEqn} does not have a closed-form inverse transform. In the proposed toolbox, we use the unified projection model in \cite{mei2007single} to model a varying range of cameras which include but are not limited to normal, wide-angle, fish-eye and catadioptric types. This model uses the same intrinsic parameters that the pinhole projection model uses: the focal length $(\gamma_1, \gamma_2)$, aspect ratio $s$, principal point $(u_0, v_0)$, and radial and tangent lens distortion parameters $(k_1, k_2, p_1, p_2)$. The model uses one additional parameter $\xi$ to model the omnidirectional camera effect. 
 
-\section{Initialization}
+\section{Calibration Initialization}
 The unified projection model of \cite{mei2007single} assumes the catadioptric coefficient $\xi = 1$ for initialization, and then, refines the estimated intrinsics and extrinsics. The initialization is very simple and can generate a good initial guess for all parameters. The limitation of the initialization is that it requires a known projection of a straight line on the pattern. Such a projection is easy to obtain for a chessboard but difficult for our proposed pattern. Fortunately, the initialization can be solved by substituting the unified projection model into the initialization of the Taylor projection model of \cite{scaramuzza2006toolbox}.
 
 In the initialization, we assume the two focal lengths $(\gamma_1, \gamma_2)$ to be the same, the principal point to have the same coordinates as the image center, and zero lens distortion. For each detected feature point, we compute the corresponding $u$ and $v$ by subtracting the image center coordinates from the feature point's coordinates.
