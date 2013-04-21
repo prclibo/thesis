@@ -43,9 +43,9 @@ Multiple-camera systems have become increasingly prevalent in robotics and compu
 \section{Related Work}
 Recently, many efficient methods have been developed for intrinsic calibration of many types of cameras. These methods can be divided into two categories: calibration with a special calibration object, and self-calibration. In this paper, we focus on the former category which is usually much more accurate than self-calibration. Many toolboxes are available for this category of methods. Seminal work on calibrating a pinhole camera can be found in \cite{zhang2000flexible}. Some popular calibration toolboxes \cite{bouguet2004camera,stoyanov2006camera} are inspired by this method. For generic cameras, \cite{scaramuzza2006toolbox} proposes a toolbox to use a polynomial to approximate rays corresponding to each image point. This method generically applies to most camera models but does not provide a closed-form solution for undistorting raw images. In the toolbox proposed in \cite{mei2007single}, an unified projection model is proposed for calibrating a catadioptric system, fish-eye camera and sphere mirror system. This model is similar with \cite{scaramuzza2006toolbox} but parameterizes rays instead of using an arbitrary polynomial, which makes undistortion much simpler. Details about the previous intrinsic calibration methods can be found in section \ref{}. 
 
-Some toolboxes are also available to calibrate simple multiple-camera systems. \cite{bouguet2004camera} enables one to calibrate a stereo camera. For calibration with a system of more than two cameras, these toolboxes \cite{svoboda2005convenient,easycal} can be used. These calibration toolboxes make use of the overlapping fields of view of the cameras; hence, these toolboxes can calibrate a stereo camera and a circular camera rig with all cameras pointing inwards. However, these toolboxes are not suitable for calibrating a system of cameras with no or minimal overlapping fields of view. There is increasing popularity of the use of a camera rig with cameras pointing outwards in both academia and industry; this system cannot be easily calibrated using existing calibration toolboxes due to the minimal overlapping fields of view. Hand-eye calibration algorithms \cite{tsai1989new,shiu1989calibration} can be used to calibrate this system but requires reconstructing visual odometry for each camera, and the calibration is often not accurate due to visual odometry drift. Details about some existing multiple-camera calibration methods can be found in section \ref{}. 
+Some toolboxes are also available for calibrating some simple multiple-camera systems. \cite{bouguet2004camera} enables one to calibrate a stereo camera. For calibration with a system of more than two cameras, these toolboxes \cite{svoboda2005convenient,easycal} can be used. These calibration toolboxes make use of the overlapping fields of view of the cameras; hence, these toolboxes can calibrate a stereo camera and a circular camera rig with all cameras pointing inwards. However, these toolboxes are not suitable for calibrating a system of cameras with no or minimal overlapping fields of view. There is increasing popularity of the use of a camera rig with cameras pointing outwards in both academia and industry; this system cannot be easily calibrated using existing calibration toolboxes due to the minimal overlapping fields of view. Hand-eye calibration algorithms \cite{tsai1989new,shiu1989calibration} can be used to calibrate this system but requires reconstructing visual odometry for each camera, and the calibration is often not accurate due to visual odometry drift. Details about some existing multiple-camera calibration methods can be found in section \ref{}. 
 
-In addition to camera models, research has also focused on development of easy-to-use calibration patterns. Early research made use of cubes with either a chessboard pattern or circular dots on their surfaces \cite{bouguet2004camera}. This pattern is not very convenient since a perfect cube is not easy to build. Current state-of-art calibration systems mainly make use of calibration boards which are often planes with a chessboard or circular dots printed on them. An automatic detector for such patterns is readily available \cite{rufli2008automatic}. A comparison of calibration accuracy between a chessboard and circular dots can be found in \cite{mallon2007pattern}. \cite{easycal} uses a similar but even more simplified calibration object, a single point light, for calibrating multiple-camera system. One disadvantage of these patterns is that the entire pattern has to be visible in each calibration image; this requirement excludes cameras with minimal overlapping fields of view. In addition to the chessboard and circular dots, some other patterns have been proposed. \cite{schmalz2011camera} uses a temporal coded pattern to calibrate cameras. This method uses the Gray code to match world points and image points, thus not requiring the entire pattern to be in the image. The drawback of this method is the limited flexibility; the calibration requires both a display projector and a tripod for mounting a camera. More details about calibration pattern design can be found in section {}. 
+In addition to camera models, research has also focused on development of easy-to-use calibration patterns. Early research made use of cubes with either a chessboard pattern or circular dots on their surfaces \cite{bouguet2004camera}. This pattern is not very convenient since a perfect cube is not easy to build. Current state-of-art calibration systems mainly make use of calibration boards which are often planes with a chessboard or circular dots printed on them. An automatic detector for such patterns is readily available \cite{rufli2008automatic}. A comparison of calibration accuracy between a chessboard and circular dots can be found in \cite{mallon2007pattern}. \cite{easycal} uses a similar but even more simplified calibration object, a single point light, for calibrating multiple-camera system. One disadvantage of these patterns is that the entire pattern has to be visible in each calibration image; this requirement excludes cameras with minimal overlapping fields of view. In addition to the chessboard and circular dots, some other patterns have been proposed. \cite{schmalz2011camera} uses a temporal coded pattern to calibrate cameras. This method uses the Gray code to match world points and image points, thus not requiring the entire pattern to be in the image. The drawback of this method is the limited flexibility; the calibration requires both a display projector and a tripod for mounting a camera. More details about calibration pattern design can be found in section \ref{}. 
 
 \section{Motivation}
 Existing calibration toolboxes using the chessboard and circular-dot patterns offer ease-of-use and high calibration accuracy when it comes to calibrating single and stereo cameras. However, for a system with multiple cameras pointing in different directions, it is difficult to use these toolboxes to calibrate the extrinsics of the camera system. This is because current automatic and semi-automatic chessboard detectors require the chessboard to be entirely within the field of view of the cameras. Therefore, if two cameras have minimal overlapping field of view, it is difficult to use the chessboard for extrinsic calibration in contrast to stereo camera calibration. The extrinsic calibration for cameras with minimal overlapping fields of view can be made easier if we relax the requirement that the calibration pattern be seen in its entirety by each camera; ideally, the calibration board is automatically detected even when the cameras observe different parts of the board. For most multiple-camera systems, it is fairly common for a camera pair to see different parts of a suitably-sized calibration board at the same time. Based on this motivation, we design a feature descriptor-based calibration pattern which is easy to detect even when seen partially by a camera, and a extrinsic calibration framework using this pattern. 
@@ -65,7 +65,6 @@ The main part of this thesis makes two novel contributions:
 
 \chapter{Calibration Pattern}
 \section{Introduction}
-%TODO 1. 3D chessboard; 2. chessboard and dot; 3. Temporal code and bar code; 4. Random dots; 5. Pattern using rank. 
 The basic usage of a calibration pattern is to provide easy-to-detect feature points with known 3D coordinates. These features are then detected in the images taken by the camera to be calibrated. The corresponding 2D and 3D points can then be used to estimate the camera parameters. 
 
 Early calibration research, for example the ?DLT? method (see section \ref{} for more details), uses a cube with gridded squares or dots printed on it as the calibration pattern object \cite{}. Three orthogonal edges of the cube defines the three axes of a world coordinate system. Coordinates of the square corners or the dots can be easily measured. Figure \ref{} shows an example of the calibration cube. The usage of the calibration cube is limited by two drawbacks: 1) It is not flexible and convenient to build and move a large cube; 2) It is difficult to build a cube with its edges perfectly orthogonal. 
@@ -161,23 +160,14 @@ A single-camera calibration estimates the camera intrinsics and the poses of the
 
 \subsection{Camera Model}
 \subsubsection{Pinhole Camera Model}
-We consider the mostly commonly used pinhole camera projection model first and introduces the notations. A homogeneous 3D point $(X, Y, Z, 1)$ is projected onto a homogeneous image point $(u, v, 1)^\top$ via: 
+We consider the mostly commonly used pinhole camera projection model first and introduces the notations. A homogeneous 3D world point $\mathtt{X}^w = [X, Y, Z, 1]$ is firstly transformed to a 3D point in the camera coordinate system as $\mathtt{X}^c = [x, y, z]^\top$, and then projected onto a homogeneous image point $\mathtt{m} = [u, v, 1]^\top$, via the following equations: 
 \begin{eqnarray}
-\begin{bmatrix}
-	\begin{array}{c}
-	x \\ y \\ z
-	\end{array}
-\end{bmatrix} 
-&=&
+\label{cmEqn1}
+\mathtt{X}^c &=&
 \begin{bmatrix}
 R & t
 \end{bmatrix}
-\begin{bmatrix}
-	\begin{array}{c}
-	X \\ Y \\ Z \\ 1
-	\end{array}
-\end{bmatrix} \\
-\label{cmEqn1}
+\mathtt{X}^w \\
 x' &=&x / z \\ 
 \label{ray2homo1}
 y' &=&y / z \\
@@ -186,13 +176,9 @@ x'' &=&x'  + dx_{\text{radial}} + dx_{\text{tangent}}\\
 \label{cmEqn2}
 y'' &=&y'  + dy_{\text{radial}} + dy_{\text{tangent}}\\
 \label{cmEqn3}
-\begin{bmatrix}
-	\begin{array}{c}
-	u \\ v \\ 1
-	\end{array}
-\end{bmatrix} 
-&=&
+\mathtt{m} &=&
 K
+\arraycolsep=1.5pt%
 \begin{bmatrix}
 	\begin{array}{c}
 	x'' \\ y'' \\ 1
@@ -201,10 +187,9 @@ K
 \label{cmEqn4} 
 \end{eqnarray}
 
-where $R$ and $t$ are the rotation and translation from the world frame to the camera frame. 
-
-The lens distortion of common pinhole camera model consists of radial distortion and tangent distortion. The radial distortion is used to model the imperfection of the lens shape; the tangent distortion is used to model the assembly deviation of the lens and the camera. The radial and tangent distortion is formed as: 
+where $R$ and $t$ are the rotation and translation from the world frame to the camera frame. $[x', y', 1]^\top$ is the normalized image point without lens distortion and $[x'', y'', 1]^\top$ is the normalized image point with lens distortion. The lens distortion of common pinhole camera model consists of radial distortion and tangent distortion. The radial distortion is used to model the imperfection of the lens shape; the tangent distortion is used to model the assembly deviation of the lens and the camera. The radial and tangent distortion is formed as: 
 \begin{eqnarray}
+\arraycolsep=1.5pt%
 \begin{bmatrix}
 	\begin{array}{c}
 	dx_{\text{radial}} \\ dy_{\text{radial}}
@@ -212,11 +197,13 @@ The lens distortion of common pinhole camera model consists of radial distortion
 \end{bmatrix} 
 &=&
 (1 + k_1 \rho^2 + k_2 \rho^4) 
+\arraycolsep=1.5pt%
 \begin{bmatrix}
 	\begin{array}{c}
 	x' \\ y'
 	\end{array}
 \end{bmatrix} \\
+\arraycolsep=1.5pt%
 \begin{bmatrix}
 	\begin{array}{c}
 	dx_{\text{tangent}} \\ dy_{\text{tangent}}
@@ -242,13 +229,71 @@ K =
 	0 & 0 & 1
 	\end{array}
 \end{bmatrix}
+\label{kEqn}
 \end{equation}
 where $\gamma_1$ and $\gamma_2$ are the focal lengths of horizontal and vertical directions; $s$ is the skew parameter; $(u_0, v_0)^\top$ is the principal point. 
 
 Details about the pinhole camera model can be found from \cite{hartley2000multiple}. Details about the distortion model can be found from \cite{}. 
 
 \subsubsection{Extension for Generic Cameras}
-We can easily extend the above pinhole camera model to generic cameras. Firstly consider a ideal camera with focal length $\gamma$, principal point $(0, 0)^\top$, and without distortion. An image point $(u, v, 1)^\top$ corresponds to a ray with direction $(u, v, f(u, v))^\top$ which goes through the origin of the camera's coordinate system. This ray definition unifies the various projection models via different definitions of $f(u, v)$. For the pinhole projection model, the corresponding ray is $(u, v, \gamma) \sim (x', y', 1)$. Thus we have: 
+Normal generic camera models include fish-eye, wide-angle and catadioptric camera models. In this toolbox, we consider using the catadioptric camera model as our generic camera model. It is shown in \cite{} that the catadioptric model also provides a good approximation for modeling fish-eye and wide-angle cameras. A catadioptric camera is an optical system composed by a camera and a curved mirror. The world ``catadioptric'' comes from ``catoptric'' and ``dioptric''. In the catadioptric camra, light is reflected by the curved mirror first and then goes through the camera lens. Three typically used mirror shape in the catadioptric model is ellipsoid, parabola and hyperbola. 
+\begin{itemize}
+	\item \textit{Ellipsoid}. Figure \ref{} shows an illustration for the catadioptric camera with a ellipsoid-shaped mirror. A pinhole camera is located on one of the focal points of the ellipsoid. Light which goes through the other focal point is reflected by the mirror and then percepted by the camera. 
+	\item \textit{Parabola}. Figure \ref{} shows an illustration for the catadioptric camera with a parabola-shaped mirror. An orthogonal camera is assumed to be align with the $xy$ plane. An orthogonal camera is a camera model which transforms a 3D point $(x, y, z)^\top$ to $(x, y)^\top$ on the image plane. It can be interpreted as a pinhole camera with infinite focal length. $xy$ plane is then the image plane of the orthogonal camera. As shown in figure \ref{}, light which goes through the focal point is reflected to the direction perpendicular to the $x$-axis and then percepted by the orthogonal camera on $xy$ plane. 
+	\item \textit{Hyperbola}. Figure \ref{} shows an illustration for the catadioptric camera with a hyperbola-shaped mirror. A pinhole camera is located on one of the focal points of the hyperbola. Light which goes through the other focal point is reflected by the mirror and then percepted by the camera. The catadioptric camera with a hyperbola-shaped mirror can be used as an omnidirectional camera as the mirror compresses a wide field of view to a limited field of view. 
+\end{itemize}
+
+\begin{figure}
+\centering
+\includegraphics[width = 0.7\textwidth]{images/liftSphere.eps}
+\caption{The unified projection model for the catadioptric camera model. A 3D point $(x, y, z)^\top$ is firstly projected on a unit sphere and then percepted by a camera located at $(0, 0, -\xi)$, as, $(x', y')$. }
+\end{figure}
+
+
+The advantage of these three quadratic surface-shaped mirror is that they can be modelled as an equivalent pinhole camera model using the unified projection model proposed by \cite{}. Equations \ref{ray2homo1} and \ref{ray2homo2} transforms the 3D point $\mathtt{X}^c = (x, y, z)^\top$ to its corresponding normalized image point $(x', y', 1)^\top$. In the catadioptric camera model, this transforms is extended by introducing a new parameter $xi$, which is used to denote the shape of the mirror in the catadioptric model. The ellipsoid-shaped mirror corresponds with $\xi < 1$; The parabola-shaped mirror corresponds with $xi = 1$; The hyperbola mirror corresponds with $\xi > 1$. The extended transforms is shown as follows: 
+\begin{eqnarray}
+\mathtt{X}^s &=&
+\frac{1}{\| \mathtt{X}^c \|} \mathtt{X}^c \\
+x' &=& x_s / (z_s + \xi) \\
+y' &=& y_s / (z_s + \xi) 
+\end{eqnarray}
+where $\mathtt{X}^s = [x_s, y_s, z_s]^\top$ is the projection of $\mathtt{X}^c$ on a unit sphere. This transform is shown in Figure \ref{}. Details about the deduction of the above transform can be found from \cite{}. 
+
+
+\subsection{Single Camera Calibration}
+Most commonly used camera calibration methods can be formed as a two-stage procedure. The first stage is the initialization of camera parameters and the second stage is the refinement of the parameters. In this subsection we provide an introduction of the state-of-art single camera calibration approaches, mainly focusing on the initialization stage, since the refinement stage is roughly similar for different calibration approaches. 
+
+\subsubsection{Direct Linear Transform (DLT) Method for Pinhole Camera Calibration}
+First we introduce the well-known DLT calibration method proposed by \cite{}. Since the distortion coefficients are usually small, we assume that the distortion coefficients are zeros at the initialization stage. Combining equations \ref{cmEqn1}-\ref{cmEqn4}, we obtain the following equations for the pinhole camera projection model, with zero lens distortion. 
+\begin{eqnarray}
+\mu \mathtt{m} &=& P \mathtt{X}^w \\
+P &=& K 
+\begin{bmatrix}
+R & t
+\end{bmatrix}
+\end{eqnarray}
+where $\mu$ is a scale factor. Given a set of known 3D points $\mathtt{X}^w_i = (X_i, Y_i, Z_i, 1)^\top$ and their corresponding image points $\mathtt{m}_i = (u_i, v_i, 1)$ from a single image. $P$ can be solved from the following equation system 
+\begin{equation}
+\mathtt{m}_i \times P \mathtt{X}^w_i= 0, \forall i
+\end{equation}
+The first 3 columns of $P$ is equal to $K R$, where $R$ is the rotation matrix of the camera when capture the single image. From equation \ref{kEqn}, we know $K$ is a upper-triangular matrix. Thus, $K$ and $R$ can be obtained by executing an RQ-decomposition (a variation of the well-known QR decomposition) on the first 3 columns of $P$ and $t$ can be extracted from $P$. After we obtain these initial estimation for the camera parameters, a non-linear refinement can be executed to obtain the final estimation of the camera parameters. The refinement starts from the initial estimated $K$, $R$, $t$ and zero distortion. It varies these parameters to minimize reprojection error of the 3D point $\mathtt{X}^w$. The summarized reprojection error is formed as follows: 
+\begin{equation}
+\sum_{\forall i} \left \| \mathtt{m}_i - \hat{\mathtt{m}}_i(\mathtt{X}^c_i, R, t, K, k_1, k_2, p_1, p_2) \right \|^2
+\end{equation}
+where $\hat{\mathtt{m}}_i(\star)$ denotes the camera projection procedure formed by equations \ref{cmEqn1}-\ref{cmEqn4}. If multiple images of a calibration object is available, we can initialize the calibration using one image and then minimize the reprojection error of all the images. 
+%TODO Degenerated case. 
+
+\subsubsection{Generic Camera Calibration}
+
+
+We can easily extend the above pinhole camera model to generic cameras by using different $f(x, y)$. We consider the central catadioptric model to model generic cameras here. A central catadioptric camera system is usually made up of a pinhole camera and a curved mirror. Typical shapes of the mirror include . Figure \ref{} shows a photo of a catadioptric system with a hyperbola shaped mirror. 
+
+It is known \cite{} that for the central catadioptric camera model, $f(x, y, z)$ can be express as follows. 
+\begin{equation}
+\end{equation}
+
+
+%We can easily extend the above pinhole camera model to generic cameras. Firstly consider a ideal camera with focal length $\gamma$, principal point $(0, 0)^\top$, and without distortion. An image point $(u, v, 1)^\top$ corresponds to a ray with direction $(u, v, f(u, v))^\top$ which goes through the origin of the camera's coordinate system. This ray definition unifies the various projection models via different definitions of $f(u, v)$. For the pinhole projection model, the corresponding ray is $(u, v, \gamma) \sim (x', y', 1)$. Thus we have: 
 \begin{equation}
 f(u, v) \equiv \gamma
 \label{pinholeEqn}
@@ -267,7 +312,9 @@ f(u, v) = a_0 + \cdots + a_n \rho^n
 \end{equation}
 Equation \ref{polynEqn} does not have a closed-form inverse transform. In the proposed toolbox, we use the unified projection model in \cite{mei2007single} to model a varying range of cameras which include but are not limited to normal, wide-angle, fish-eye and catadioptric types. This model uses the same intrinsic parameters that the pinhole projection model uses: the focal length $(\gamma_1, \gamma_2)$, aspect ratio $s$, principal point $(u_0, v_0)$, and radial and tangent lens distortion parameters $(k_1, k_2, p_1, p_2)$. The model uses one additional parameter $\xi$ to model the omnidirectional camera effect. 
 
+
 \section{Calibration Initialization}
+
 The unified projection model of \cite{mei2007single} assumes the catadioptric coefficient $\xi = 1$ for initialization, and then, refines the estimated intrinsics and extrinsics. The initialization is very simple and can generate a good initial guess for all parameters. The limitation of the initialization is that it requires a known projection of a straight line on the pattern. Such a projection is easy to obtain for a chessboard but difficult for our proposed pattern. Fortunately, the initialization can be solved by substituting the unified projection model into the initialization of the Taylor projection model of \cite{scaramuzza2006toolbox}.
 
 In the initialization, we assume the two focal lengths $(\gamma_1, \gamma_2)$ to be the same, the principal point to have the same coordinates as the image center, and zero lens distortion. For each detected feature point, we compute the corresponding $u$ and $v$ by subtracting the image center coordinates from the feature point's coordinates.
