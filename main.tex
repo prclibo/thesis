@@ -61,24 +61,37 @@ The main part of this thesis makes two novel contributions:
 \item A toolbox based on the proposed calibration pattern. This toolbox can be used for both intrinsic and extrinsic calibration of a multiple-camera system, as illustrated in chapters \ref{singleSec} and \ref{extrinsicSec}. Similarly to existing calibration toolboxes, our toolbox can also be used for intrinsic calibration of a single camera. 
 \end{enumerate}
 
+\chapter{Notations}
+\begin{tabular}{ll}
+$\mathbf{X}^w = [X^w, Y^w, Z^w]^\top$ & A 3D point in the world coordinate system, in the homogeneous coordinate form.\\
+$\mathbf{X}^c = [X^c, Y^c, Y^c]^\top$ & A 3D point in the camera coordinate system. \\
+$\mathbf{x} = [x, y]^\top$ & A 2D image point on a normalized image plane with unit focal length. \\
+$\mathbf{x}' = [x', y']^\top$ & A 2D image point with lens distortion on a normalized image plane with unit focal length. \\
+$\mathbf{d}_\text{rad} = [dx_\text{rad}, dy_\text{rad}]^\top$ & A image point deviation on the normalized image plane due to the radial lens distortion. 
+\end{tabular}
+
 \chapter{Camera Model}
 \subsection{Pinhole Camera Model}
 We consider the mostly commonly used pinhole camera projection model first and introduces the notations. A homogeneous 3D world point $\mathbf{X}^w = [X, Y, Z, 1]$ is firstly transformed to a 3D point in the camera coordinate system as $\mathbf{X}^c = [x, y, z]^\top$, and then projected onto a homogeneous image point $\mathbf{m} = [u, v, 1]^\top$, via the following equations: 
 \begin{eqnarray}
 \label{cmEqn1}
 \mathbf{X}^c &=&
+\mathbf{R} \mathbf{X}^w + \mathbf{t} \\
+%x' &=&x / z \\ 
+%\label{ray2homo1}
+%y' &=&y / z \\
+%\label{ray2homo2}
+%x'' &=&x'  + dx_{\text{radial}} + dx_{\text{tangent}}\\
+%\label{cmEqn2}
+%y'' &=&y'  + dy_{\text{radial}} + dy_{\text{tangent}}\\
+%\label{cmEqn3}
+\mathbf{x}' &=& \frac{1}{z} 
 \begin{bmatrix}
-\mathbf{R} & \mathbf{t}
-\end{bmatrix}
-\mathbf{X}^w \\
-x' &=&x / z \\ 
-\label{ray2homo1}
-y' &=&y / z \\
-\label{ray2homo2}
-x'' &=&x'  + dx_{\text{radial}} + dx_{\text{tangent}}\\
-\label{cmEqn2}
-y'' &=&y'  + dy_{\text{radial}} + dy_{\text{tangent}}\\
-\label{cmEqn3}
+\begin{array}{c}
+x \\ y
+\end{array}
+\end{bmatrix} \\
+\mathbf{x}'' &=& \mathbf{x}' + \mathbf{d}_\text{rad} + \mathbf{d}_\text{tan} \\
 \mathbf{m} &=&
 \mathbf{K}
 \arraycolsep=1.5pt%
