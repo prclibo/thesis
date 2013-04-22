@@ -61,6 +61,107 @@ The main part of this thesis makes two novel contributions:
 \item A toolbox based on the proposed calibration pattern. This toolbox can be used for both intrinsic and extrinsic calibration of a multiple-camera system, as illustrated in chapters \ref{singleSec} and \ref{extrinsicSec}. Similarly to existing calibration toolboxes, our toolbox can also be used for intrinsic calibration of a single camera. 
 \end{enumerate}
 
+\chapter{Camera Model}
+\subsection{Pinhole Camera Model}
+We consider the mostly commonly used pinhole camera projection model first and introduces the notations. A homogeneous 3D world point $\mathbf{X}^w = [X, Y, Z, 1]$ is firstly transformed to a 3D point in the camera coordinate system as $\mathbf{X}^c = [x, y, z]^\top$, and then projected onto a homogeneous image point $\mathbf{m} = [u, v, 1]^\top$, via the following equations: 
+\begin{eqnarray}
+\label{cmEqn1}
+\mathbf{X}^c &=&
+\begin{bmatrix}
+\mathbf{R} & \mathbf{t}
+\end{bmatrix}
+\mathbf{X}^w \\
+x' &=&x / z \\ 
+\label{ray2homo1}
+y' &=&y / z \\
+\label{ray2homo2}
+x'' &=&x'  + dx_{\text{radial}} + dx_{\text{tangent}}\\
+\label{cmEqn2}
+y'' &=&y'  + dy_{\text{radial}} + dy_{\text{tangent}}\\
+\label{cmEqn3}
+\mathbf{m} &=&
+\mathbf{K}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	x'' \\ y'' \\ 1
+	\end{array}
+\end{bmatrix}
+\label{cmEqn4} 
+\end{eqnarray}
+
+where $R$ and $t$ are the rotation and translation from the world frame to the camera frame. $[x', y', 1]^\top$ is the normalized image point without lens distortion and $[x'', y'', 1]^\top$ is the normalized image point with lens distortion. The lens distortion of common pinhole camera model consists of radial distortion and tangent distortion. The radial distortion is used to model the imperfection of the lens shape; the tangent distortion is used to model the assembly deviation of the lens and the camera. The radial and tangent distortion is formed as: 
+\begin{eqnarray}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	dx_{\text{radial}} \\ dy_{\text{radial}}
+	\end{array}
+\end{bmatrix} 
+&=&
+(1 + k_1 \rho^2 + k_2 \rho^4) 
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	x' \\ y'
+	\end{array}
+\end{bmatrix} \\
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	dx_{\text{tangent}} \\ dy_{\text{tangent}}
+	\end{array}
+\end{bmatrix} 
+&=&
+\begin{bmatrix}
+	\begin{array}{c}
+	2 p_1 x' y' + p_2 (\rho^2 + 2 x'^2) \\ 
+	p_1 (\rho^2 + 2 y'^2) + 2 p_2 x' y'
+	\end{array}
+\end{bmatrix} \\
+\rho &=& \sqrt{x'^2 + y'^2}
+\end{eqnarray}
+
+$K$ is the intrinsic matrix denoted as: 
+\begin{equation}
+\mathbf{K} = 
+\begin{bmatrix}
+	\begin{array}{ccc}
+	\gamma_1 & s & u_0 \\ 
+	0 & \gamma_2 & v_0 \\ 	
+	0 & 0 & 1
+	\end{array}
+\end{bmatrix}
+\label{kEqn}
+\end{equation}
+where $\gamma_1$ and $\gamma_2$ are the focal lengths of horizontal and vertical directions; $s$ is the skew parameter; $(u_0, v_0)^\top$ is the principal point. 
+
+Details about the pinhole camera model can be found from \cite{hartley2000multiple}. Details about the distortion model can be found from \cite{}. 
+
+\subsection{Extension for Generic Cameras}
+Normal generic camera models include fish-eye, wide-angle and catadioptric camera models. In this toolbox, we consider using the catadioptric camera model as our generic camera model. It is shown in \cite{} that the catadioptric model also provides a good approximation for modeling fish-eye and wide-angle cameras. A catadioptric camera is an optical system composed by a camera and a curved mirror. The world ``catadioptric'' comes from ``catoptric'' and ``dioptric''. In the catadioptric camra, light is reflected by the curved mirror first and then goes through the camera lens. Three typically used mirror shape in the catadioptric model is ellipsoid, parabola and hyperbola. 
+\begin{itemize}
+	\item \textit{Ellipsoid}. Figure \ref{} shows an illustration for the catadioptric camera with a ellipsoid-shaped mirror. A pinhole camera is located on one of the focal points of the ellipsoid. Light which goes through the other focal point is reflected by the mirror and then percepted by the camera. 
+	\item \textit{Parabola}. Figure \ref{} shows an illustration for the catadioptric camera with a parabola-shaped mirror. An orthogonal camera is assumed to be align with the $xy$ plane. An orthogonal camera is a camera model which transforms a 3D point $(x, y, z)^\top$ to $(x, y)^\top$ on the image plane. It can be interpreted as a pinhole camera with infinite focal length. $xy$ plane is then the image plane of the orthogonal camera. As shown in figure \ref{}, light which goes through the focal point is reflected to the direction perpendicular to the $x$-axis and then percepted by the orthogonal camera on $xy$ plane. 
+	\item \textit{Hyperbola}. Figure \ref{} shows an illustration for the catadioptric camera with a hyperbola-shaped mirror. A pinhole camera is located on one of the focal points of the hyperbola. Light which goes through the other focal point is reflected by the mirror and then percepted by the camera. The catadioptric camera with a hyperbola-shaped mirror can be used as an omnidirectional camera as the mirror compresses a wide field of view to a limited field of view. 
+\end{itemize}
+
+\begin{figure}
+\centering
+\includegraphics[width = 0.7\textwidth]{images/liftSphere.eps}
+\caption{The unified projection model for the catadioptric camera model. A 3D point $(x, y, z)^\top$ is firstly projected on a unit sphere and then percepted by a camera located at $(0, 0, -\xi)$, as, $(x', y')$. }
+\end{figure}
+
+
+The advantage of these three quadratic surface-shaped mirror is that they can be modelled as an equivalent pinhole camera model using the unified projection model proposed by \cite{}. Equations \ref{ray2homo1} and \ref{ray2homo2} transforms the 3D point $\mathbf{X}^c = (x, y, z)^\top$ to its corresponding normalized image point $(x', y', 1)^\top$. In the catadioptric camera model, this transforms is extended by introducing a new parameter $xi$, which is used to denote the shape of the mirror in the catadioptric model. The ellipsoid-shaped mirror corresponds with $\xi < 1$; The parabola-shaped mirror corresponds with $xi = 1$; The hyperbola mirror corresponds with $\xi > 1$. The extended transforms is shown as follows: 
+\begin{eqnarray}
+\mathbf{X}^s &=&
+\frac{1}{\| \mathbf{X}^c \|} \mathbf{X}^c \\
+x' &=& x_s / (z_s + \xi) \\
+y' &=& y_s / (z_s + \xi) 
+\end{eqnarray}
+where $\mathbf{X}^s = [x_s, y_s, z_s]^\top$ is the projection of $\mathbf{X}^c$ on a unit sphere. This transform is shown in Figure \ref{}. Details about the deduction of the above transform can be found from \cite{}. 
+
  
 
 \chapter{Calibration Pattern}
@@ -131,23 +232,23 @@ imshow(pattern);
 \section{Feature Matching}
 Feature detection and feature matching between two images are two standard steps of in a modern 3D vision pipeline. In our calibration approach, we employ a similar step to match features between each image and the known calibration pattern image. First, features detected from each image and the pattern image are matched according to the descriptor similarity. We use the well-known distance ratio check proposed in \cite{lowe2004distinctive}. For a set of at least 2 candidate matches for each query feature, the best match is accepted only if its descriptor distance is smaller than 0.6 times the descriptor distance between the query feature and its second best match. 
 
-Next, a \textit{fundamental matrix for radial distortion} is estimated by RANSAC between the image points and pattern points to find inlier point correspondences. Note that this fundamental matrix is not the same matrix used in traditional epipolar geometry. The traditional matrix requires that point correspondences have image coordinates corresponding to rectified images. Details about this fundamental matrix can be found in \cite{hartley2007parameter}. We provide some simple explanation about the fundamental matrix here. Denote $p^d$ as a distorted image point, $p^u$ as its corresponding undistorted point and $p^c$ as the corresponding point on the calibration pattern. If the image only has radial distortion and $e$ is the distortion center, we can write:
+Next, a \textit{fundamental matrix for radial distortion} is estimated by RANSAC between the image points and pattern points to find inlier point correspondences. Note that this fundamental matrix is not the same matrix used in traditional epipolar geometry. The traditional matrix requires that point correspondences have image coordinates corresponding to rectified images. Details about this fundamental matrix can be found in \cite{hartley2007parameter}. We provide some simple explanation about the fundamental matrix here. Denote $\mathbf{p}^d$ as a distorted image point, $\mathbf{p}^u$ as its corresponding undistorted point and $\mathbf{p}^c$ as the corresponding point on the calibration pattern. If the image only has radial distortion and $e$ is the distortion center, we can write:
 \begin{equation}
-p^d = e + \lambda (p^u - e)
+\mathbf{p}^d = \mathbf{e} + \lambda (\mathbf{p}^u - \mathbf{e})
 \end{equation}
-where $\lambda$ is a distortion coefficient corresponding to $p^u$. In addition, since $p^u$ can be obtained by a perspective transform from $p^c$, there exists a homography $H$ such that $p^u = H p^c$. Substituting this into the above equation, we obtain: 
+where $\lambda$ is a distortion coefficient corresponding to $\mathbf{p}^u$. In addition, since $\mathbf{p}^u$ can be obtained by a perspective transform from $\mathbf{p}^c$, there exists a homography $\mathbf{H}$ such that $\mathbf{p}^u = \mathbf{H} \mathbf{p}^c$. Substituting this into the above equation, we obtain: 
 \begin{equation}
-p^d = e + \lambda (H p^c - e)
+\mathbf{p}^d = \mathbf{e} + \lambda (\mathbf{H} \mathbf{p}^c - \mathbf{e})
 \end{equation}
-Left-multiplying the equation by $[e]_\times$, we get:
+Left-multiplying the equation by $[\mathbf{e}]_\times$, we get:
 \begin{equation}
-{}[e]_\times p^d = \lambda [e]_\times H p^c
+{}[\mathbf{e}]_\times \mathbf{p}^d = \lambda [\mathbf{e}]_\times \mathbf{H} \mathbf{p}^c
 \end{equation}
-Left-multiplying the equation again by ${p^d}^\top$, we get:
+Left-multiplying the equation again by ${\mathbf{p}^d}^\top$, we get:
 \begin{equation}
-0 = {p^d}^\top [e]_\times H p^c
+0 = {\mathbf{p}^d}^\top [\mathbf{e}]_\times \mathbf{H} \mathbf{p}^c
 \end{equation}
-$F \equiv [e]_\times H$ is the fundamental matrix for radial distortion, and $e$ can be interpreted as the principal point. This fundamental matrix is well-suited to both the pinhole and unified projection models, and is used to remove false feature matches in our proposed calibration approach. Only in case the images perfectly agree with the pinhole camera model (no lens distortion at all), it suffices to estimate a homography.
+$\mathbf{F} \equiv [\mathbf{e}]_\times \mathbf{H}$ is the fundamental matrix for radial distortion, and $e$ can be interpreted as the principal point. This fundamental matrix is well-suited to both the pinhole and unified projection models, and is used to remove false feature matches in our proposed calibration approach. Only in case the images perfectly agree with the pinhole camera model (no lens distortion at all), it suffices to estimate a homography.
 This case could be detected by automatic model selection methods like the GRIC criterion\cite{torr1997assessment}, however since this is a very special case, for the current version we leave it to the user to specify this mode.
 % However, this fundamental matrix for radial distortion is degenerate when the features are perfectly undistorted. In this case, a homography can be estimated between the pattern features and image features. We select the correct model by comparing the number of inliers.  investigates more complex model selection methods; however, we do not use such methods in our toolbox for sake of simplicity. 
 
@@ -158,130 +259,32 @@ This case could be detected by automatic model selection methods like the GRIC c
 \label{singleSec}
 A single-camera calibration estimates the camera intrinsics and the poses of the calibration pattern with respect to the camera's coordinate system. Methods for calibrating a single camera have been well studied in the past decades. The calibrated camera intrinsics and pattern poses for each single cameras can then be used in calibrating the multiple-camera system formed by these single cameras. 
 
-\subsection{Camera Model}
-\subsubsection{Pinhole Camera Model}
-We consider the mostly commonly used pinhole camera projection model first and introduces the notations. A homogeneous 3D world point $\mathtt{X}^w = [X, Y, Z, 1]$ is firstly transformed to a 3D point in the camera coordinate system as $\mathtt{X}^c = [x, y, z]^\top$, and then projected onto a homogeneous image point $\mathtt{m} = [u, v, 1]^\top$, via the following equations: 
-\begin{eqnarray}
-\label{cmEqn1}
-\mathtt{X}^c &=&
-\begin{bmatrix}
-R & t
-\end{bmatrix}
-\mathtt{X}^w \\
-x' &=&x / z \\ 
-\label{ray2homo1}
-y' &=&y / z \\
-\label{ray2homo2}
-x'' &=&x'  + dx_{\text{radial}} + dx_{\text{tangent}}\\
-\label{cmEqn2}
-y'' &=&y'  + dy_{\text{radial}} + dy_{\text{tangent}}\\
-\label{cmEqn3}
-\mathtt{m} &=&
-K
-\arraycolsep=1.5pt%
-\begin{bmatrix}
-	\begin{array}{c}
-	x'' \\ y'' \\ 1
-	\end{array}
-\end{bmatrix}
-\label{cmEqn4} 
-\end{eqnarray}
-
-where $R$ and $t$ are the rotation and translation from the world frame to the camera frame. $[x', y', 1]^\top$ is the normalized image point without lens distortion and $[x'', y'', 1]^\top$ is the normalized image point with lens distortion. The lens distortion of common pinhole camera model consists of radial distortion and tangent distortion. The radial distortion is used to model the imperfection of the lens shape; the tangent distortion is used to model the assembly deviation of the lens and the camera. The radial and tangent distortion is formed as: 
-\begin{eqnarray}
-\arraycolsep=1.5pt%
-\begin{bmatrix}
-	\begin{array}{c}
-	dx_{\text{radial}} \\ dy_{\text{radial}}
-	\end{array}
-\end{bmatrix} 
-&=&
-(1 + k_1 \rho^2 + k_2 \rho^4) 
-\arraycolsep=1.5pt%
-\begin{bmatrix}
-	\begin{array}{c}
-	x' \\ y'
-	\end{array}
-\end{bmatrix} \\
-\arraycolsep=1.5pt%
-\begin{bmatrix}
-	\begin{array}{c}
-	dx_{\text{tangent}} \\ dy_{\text{tangent}}
-	\end{array}
-\end{bmatrix} 
-&=&
-\begin{bmatrix}
-	\begin{array}{c}
-	2 p_1 x' y' + p_2 (\rho^2 + 2 x'^2) \\ 
-	p_1 (\rho^2 + 2 y'^2) + 2 p_2 x' y'
-	\end{array}
-\end{bmatrix} \\
-\rho &=& \sqrt{x'^2 + y'^2}
-\end{eqnarray}
-
-$K$ is the intrinsic matrix denoted as: 
-\begin{equation}
-K = 
-\begin{bmatrix}
-	\begin{array}{ccc}
-	\gamma_1 & s & u_0 \\ 
-	0 & \gamma_2 & v_0 \\ 	
-	0 & 0 & 1
-	\end{array}
-\end{bmatrix}
-\label{kEqn}
-\end{equation}
-where $\gamma_1$ and $\gamma_2$ are the focal lengths of horizontal and vertical directions; $s$ is the skew parameter; $(u_0, v_0)^\top$ is the principal point. 
-
-Details about the pinhole camera model can be found from \cite{hartley2000multiple}. Details about the distortion model can be found from \cite{}. 
-
-\subsubsection{Extension for Generic Cameras}
-Normal generic camera models include fish-eye, wide-angle and catadioptric camera models. In this toolbox, we consider using the catadioptric camera model as our generic camera model. It is shown in \cite{} that the catadioptric model also provides a good approximation for modeling fish-eye and wide-angle cameras. A catadioptric camera is an optical system composed by a camera and a curved mirror. The world ``catadioptric'' comes from ``catoptric'' and ``dioptric''. In the catadioptric camra, light is reflected by the curved mirror first and then goes through the camera lens. Three typically used mirror shape in the catadioptric model is ellipsoid, parabola and hyperbola. 
-\begin{itemize}
-	\item \textit{Ellipsoid}. Figure \ref{} shows an illustration for the catadioptric camera with a ellipsoid-shaped mirror. A pinhole camera is located on one of the focal points of the ellipsoid. Light which goes through the other focal point is reflected by the mirror and then percepted by the camera. 
-	\item \textit{Parabola}. Figure \ref{} shows an illustration for the catadioptric camera with a parabola-shaped mirror. An orthogonal camera is assumed to be align with the $xy$ plane. An orthogonal camera is a camera model which transforms a 3D point $(x, y, z)^\top$ to $(x, y)^\top$ on the image plane. It can be interpreted as a pinhole camera with infinite focal length. $xy$ plane is then the image plane of the orthogonal camera. As shown in figure \ref{}, light which goes through the focal point is reflected to the direction perpendicular to the $x$-axis and then percepted by the orthogonal camera on $xy$ plane. 
-	\item \textit{Hyperbola}. Figure \ref{} shows an illustration for the catadioptric camera with a hyperbola-shaped mirror. A pinhole camera is located on one of the focal points of the hyperbola. Light which goes through the other focal point is reflected by the mirror and then percepted by the camera. The catadioptric camera with a hyperbola-shaped mirror can be used as an omnidirectional camera as the mirror compresses a wide field of view to a limited field of view. 
-\end{itemize}
-
-\begin{figure}
-\centering
-\includegraphics[width = 0.7\textwidth]{images/liftSphere.eps}
-\caption{The unified projection model for the catadioptric camera model. A 3D point $(x, y, z)^\top$ is firstly projected on a unit sphere and then percepted by a camera located at $(0, 0, -\xi)$, as, $(x', y')$. }
-\end{figure}
-
-
-The advantage of these three quadratic surface-shaped mirror is that they can be modelled as an equivalent pinhole camera model using the unified projection model proposed by \cite{}. Equations \ref{ray2homo1} and \ref{ray2homo2} transforms the 3D point $\mathtt{X}^c = (x, y, z)^\top$ to its corresponding normalized image point $(x', y', 1)^\top$. In the catadioptric camera model, this transforms is extended by introducing a new parameter $xi$, which is used to denote the shape of the mirror in the catadioptric model. The ellipsoid-shaped mirror corresponds with $\xi < 1$; The parabola-shaped mirror corresponds with $xi = 1$; The hyperbola mirror corresponds with $\xi > 1$. The extended transforms is shown as follows: 
-\begin{eqnarray}
-\mathtt{X}^s &=&
-\frac{1}{\| \mathtt{X}^c \|} \mathtt{X}^c \\
-x' &=& x_s / (z_s + \xi) \\
-y' &=& y_s / (z_s + \xi) 
-\end{eqnarray}
-where $\mathtt{X}^s = [x_s, y_s, z_s]^\top$ is the projection of $\mathtt{X}^c$ on a unit sphere. This transform is shown in Figure \ref{}. Details about the deduction of the above transform can be found from \cite{}. 
 
 
 \subsection{Single Camera Calibration}
 Most commonly used camera calibration methods can be formed as a two-stage procedure. The first stage is the initialization of camera parameters and the second stage is the refinement of the parameters. In this subsection we provide an introduction of the state-of-art single camera calibration approaches, mainly focusing on the initialization stage, since the refinement stage is roughly similar for different calibration approaches. 
 
 \subsubsection{Direct Linear Transform (DLT) Method for Pinhole Camera Calibration}
-First we introduce the well-known DLT calibration method proposed by \cite{}. Since the distortion coefficients are usually small, we assume that the distortion coefficients are zeros at the initialization stage. Combining equations \ref{cmEqn1}-\ref{cmEqn4}, we obtain the following equations for the pinhole camera projection model, with zero lens distortion. 
+First we introduce the basic idea of the well-known DLT calibration method proposed by \cite{}. Since the distortion coefficients are usually small, we assume that the distortion coefficients are zeros at the initialization stage. Combining equations \ref{cmEqn1}-\ref{cmEqn4}, we obtain the following equations for the pinhole camera projection model, with zero lens distortion. 
 \begin{eqnarray}
-\mu \mathtt{m} &=& P \mathtt{X}^w \\
+\mu \mathbf{m} &=& P \mathbf{X}^w \\
 P &=& K 
 \begin{bmatrix}
 R & t
 \end{bmatrix}
 \end{eqnarray}
-where $\mu$ is a scale factor. Given a set of known 3D points $\mathtt{X}^w_i = (X_i, Y_i, Z_i, 1)^\top$ and their corresponding image points $\mathtt{m}_i = (u_i, v_i, 1)$ from a single image. $P$ can be solved from the following equation system 
+where $\mu$ is a scale factor. Given a set of known 3D points $\mathbf{X}^w_i = (X_i, Y_i, Z_i, 1)^\top$ and their corresponding image points $\mathbf{m}_i = (u_i, v_i, 1)$ from a single image. $P$ can be solved from the following equation system 
 \begin{equation}
-\mathtt{m}_i \times P \mathtt{X}^w_i= 0, \forall i
+\mathbf{m}_i \times P \mathbf{X}^w_i= 0, \forall i
 \end{equation}
-The first 3 columns of $P$ is equal to $K R$, where $R$ is the rotation matrix of the camera when capture the single image. From equation \ref{kEqn}, we know $K$ is a upper-triangular matrix. Thus, $K$ and $R$ can be obtained by executing an RQ-decomposition (a variation of the well-known QR decomposition) on the first 3 columns of $P$ and $t$ can be extracted from $P$. After we obtain these initial estimation for the camera parameters, a non-linear refinement can be executed to obtain the final estimation of the camera parameters. The refinement starts from the initial estimated $K$, $R$, $t$ and zero distortion. It varies these parameters to minimize reprojection error of the 3D point $\mathtt{X}^w$. The summarized reprojection error is formed as follows: 
+The first 3 columns of $P$ is equal to $K R$, where $R$ is the rotation matrix of the camera when capture the single image. From equation \ref{kEqn}, we know $K$ is a upper-triangular matrix. Thus, $K$ and $R$ can be obtained by executing an RQ-decomposition (a variation of the well-known QR decomposition) on the first 3 columns of $P$ and $t$ can be extracted from $P$. After we obtain these initial estimation for the camera parameters, a non-linear refinement can be executed to obtain the final estimation of the camera parameters. The refinement starts from the initial estimated $K$, $R$, $t$ and zero distortion. It varies these parameters to minimize reprojection error of the 3D point $\mathbf{X}^w$. The summarized reprojection error is formed as follows: 
 \begin{equation}
-\sum_{\forall i} \left \| \mathtt{m}_i - \hat{\mathtt{m}}_i(\mathtt{X}^c_i, R, t, K, k_1, k_2, p_1, p_2) \right \|^2
+\sum_{\forall i} \left \| \mathbf{m}_i - \hat{\mathbf{m}}_i(\mathbf{X}^c_i, R, t, K, k_1, k_2, p_1, p_2) \right \|^2
 \end{equation}
-where $\hat{\mathtt{m}}_i(\star)$ denotes the camera projection procedure formed by equations \ref{cmEqn1}-\ref{cmEqn4}. If multiple images of a calibration object is available, we can initialize the calibration using one image and then minimize the reprojection error of all the images. 
+where $\hat{\mathbf{m}}_i(\star)$ denotes the camera projection procedure formed by equations \ref{cmEqn1}-\ref{cmEqn4}. If multiple images of a calibration object is available, we can initialize the calibration using one image and then minimize the reprojection error of all the images. 
 %TODO Degenerated case. 
+
+\subsubsection{Zhang's Method for Pinhole Camera Calibration}
 
 \subsubsection{Generic Camera Calibration}
 
@@ -319,7 +322,7 @@ The unified projection model of \cite{mei2007single} assumes the catadioptric co
 
 In the initialization, we assume the two focal lengths $(\gamma_1, \gamma_2)$ to be the same, the principal point to have the same coordinates as the image center, and zero lens distortion. For each detected feature point, we compute the corresponding $u$ and $v$ by subtracting the image center coordinates from the feature point's coordinates.
 
-For a feature point with homogeneous image coordinates $p^c = [X, Y, 1]^\top$, denote its corresponding 3D point as $[X, Y, 0, 1]^\top$. The projection equation relating this 3D point to its corresponding camera ray $[u, v, f(u, v)]^\top$ is: 
+For a feature point with homogeneous image coordinates $\mathbf{p}^c = [X, Y, 1]^\top$, denote its corresponding 3D point as $[X, Y, 0, 1]^\top$. The projection equation relating this 3D point to its corresponding camera ray $[u, v, f(u, v)]^\top$ is: 
 \begin{align}
 \arraycolsep=1.5pt%
 \mu \begin{bmatrix}
@@ -337,7 +340,7 @@ For a feature point with homogeneous image coordinates $p^c = [X, Y, 1]^\top$, d
 \end{bmatrix}\\
 &= \begin{bmatrix}
 	r_1 & r_2 & t
-	\end{bmatrix} p^c
+	\end{bmatrix} \mathbf{p}^c
 \end{align}
 Left-multiplying the equation by $[u, v, f(u, v)]^\top_\times$, we have: 
 \begin{equation}
@@ -345,7 +348,7 @@ Left-multiplying the equation by $[u, v, f(u, v)]^\top_\times$, we have:
 0 = [u, v, f(u, v)]^\top_\times
 \begin{bmatrix}
 	r_1 && r_2 && t
-\end{bmatrix} p^c
+\end{bmatrix} \mathbf{p}^c
 \label{initEqn}
 \end{equation}
 Denote the rotation $r_i = [r_{1i}, r_{2i}, r_{3i}]^\top$ and the translation $t = [t_1, t_2, t_3]^\top$. The third row of equation \ref{initEqn} is independent of $f(u, v)$ and is a linear equation with respect to the unknowns $r_{11}, r_{21}, r_{12}, r_{22}, t_1, t_2$:
@@ -398,22 +401,22 @@ Assuming that the global coordinate system is aligned with $cam_1$, the poses of
 Our toolbox implementation first builds a pose graph based on the results of single-camera calibration performed for all cameras. Next, a spanning tree with $cam_1$ as its root is extracted using breadth-first search. Vertex poses are then computed by traversing the spanning tree from $cam_1$ and following the image edges. In the end, we have initial pose estimates for all vertices in the global coordinate system.
 
 \section{Refinement}
-Denote the pose in the global frame of vertex $i$ (either a camera vertex or a pattern vertex) in the graph as $H_i$. On an edge $img_{i, j}$ connecting $cam_i$ and $pat_j$, the relative transform from $pat_j$ to $cam_i$ can be denoted as $H_{i, j} = H_i^{-1} H_j$. For a calibration pattern point $p^c$, its reprojection error in each image that the point is seen in is: 
+Denote the pose in the global frame of vertex $i$ (either a camera vertex or a pattern vertex) in the graph as $H_i$. On an edge $img_{i, j}$ connecting $cam_i$ and $pat_j$, the relative transform from $pat_j$ to $cam_i$ can be denoted as $H_{i, j} = H_i^{-1} H_j$. For a calibration pattern point $\mathbf{p}^c$, its reprojection error in each image that the point is seen in is: 
 \begin{equation}
-e_{\textrm{reproj}}(p^c, H_{i, j}, \mathcal{I}_i) = \|\pi(p^c, H_{i, j}, \mathcal{C}_i) - p^d\|^2
+e_{\textrm{reproj}}(\mathbf{p}^c, H_{i, j}, \mathcal{I}_i) = \|\pi(\mathbf{p}^c, H_{i, j}, \mathcal{C}_i) - \mathbf{p}^d\|^2
 \end{equation}
-where $\pi$ is the image projection function corresponding to either the pinhole or unified projection model and $\mathcal{C}_i$ denotes the intrinsics of $cam_i$. $p^d$ is the distorted image point corresponding with $p^c$. 
+where $\pi$ is the image projection function corresponding to either the pinhole or unified projection model and $\mathcal{C}_i$ denotes the intrinsics of $cam_i$. $\mathbf{p}^d$ is the distorted image point corresponding with $\mathbf{p}^c$. 
 
 The initial calibration estimate is refined to minimize the summation of all reprojection errors. The refinement can be over either all vertex poses or over both vertex poses and intrinsics. The optimization problem with only vertex poses is defined as: 
 \begin{equation}
 \begin{aligned}
-& \argmin_{H_i, i > 1} & & \sum_{img_{i, j}} \sum_{k} e_{\textrm{reproj}}(p^c_k, H_i^{-1} H_j, \mathcal{C}_i) 
+& \argmin_{H_i, i > 1} & & \sum_{img_{i, j}} \sum_{k} e_{\textrm{reproj}}(\mathbf{p}^c_k, H_i^{-1} H_j, \mathcal{C}_i) 
 \end{aligned}
 \end{equation}
 while the optimization problem with both vertex poses and intrinsics is: 
 \begin{equation}
 \begin{aligned}
-& \argmin_{H_i, \mathcal{C}_1, \mathcal{C}_i, i > 1} & & \sum_{img_{i, j}} \sum_{k} e_{\textrm{reproj}}(p^c_k, H_i^{-1} H_j, \mathcal{C}_i) 
+& \argmin_{H_i, \mathcal{C}_1, \mathcal{C}_i, i > 1} & & \sum_{img_{i, j}} \sum_{k} e_{\textrm{reproj}}(\mathbf{p}^c_k, H_i^{-1} H_j, \mathcal{C}_i) 
 \end{aligned}
 \end{equation}
 The optimization is over $H_i$ with $i > 1$, since $H_1 \equiv I_{4 \times 4}$ is the reference frame. The toolbox executes the optimization using the Levenberg-Marquardt algorithm. 
