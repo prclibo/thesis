@@ -86,6 +86,7 @@ We consider the mostly commonly used pinhole camera projection model first and i
 %y'' &=&y'  + dy_{\text{radial}} + dy_{\text{tangent}}\\
 %\label{cmEqn3}
 \mathbf{x}' &=& \frac{1}{z} 
+\arraycolsep=1.5pt%
 \begin{bmatrix}
 \begin{array}{c}
 x \\ y
@@ -147,7 +148,7 @@ $K$ is the intrinsic matrix denoted as:
 \end{bmatrix}
 \label{kEqn}
 \end{equation}
-where $\gamma_1$ and $\gamma_2$ are the focal lengths of horizontal and vertical directions; $s$ is the skew parameter; $(u_0, v_0)^\top$ is the principal point. 
+where $\gamma_1$ and $\gamma_2$ are the focal lengths of horizontal and vertical directions; $s$ is the skew parameter; $[u_0, v_0]^\top$ is the principal point. 
 
 Details about the pinhole camera model can be found from \cite{hartley2000multiple}. Details about the distortion model can be found from \cite{}. 
 
@@ -170,8 +171,8 @@ The advantage of these three quadratic surface-shaped mirror is that they can be
 \begin{eqnarray}
 \mathbf{X}^s &=&
 \frac{1}{\| \mathbf{X}^c \|} \mathbf{X}^c \\
-x' &=& x_s / (z_s + \xi) \\
-y' &=& y_s / (z_s + \xi) 
+x' &=& x_s / (z_s + \xi) \label{liftEqn1}\\
+y' &=& y_s / (z_s + \xi) \label{liftEqn2}
 \end{eqnarray}
 where $\mathbf{X}^s = [x_s, y_s, z_s]^\top$ is the projection of $\mathbf{X}^c$ on a unit sphere. This transform is shown in Figure \ref{}. Details about the deduction of the above transform can be found from \cite{}. 
 
@@ -278,28 +279,133 @@ A single-camera calibration estimates the camera intrinsics and the poses of the
 Most commonly used camera calibration methods can be formed as a two-stage procedure. The first stage is the initialization of camera parameters and the second stage is the refinement of the parameters. In this subsection we provide an introduction of the state-of-art single camera calibration approaches, mainly focusing on the initialization stage, since the refinement stage is roughly similar for different calibration approaches. 
 
 \subsubsection{Direct Linear Transform (DLT) Method for Pinhole Camera Calibration}
-First we introduce the basic idea of the well-known DLT calibration method proposed by \cite{}. Since the distortion coefficients are usually small, we assume that the distortion coefficients are zeros at the initialization stage. Combining equations \ref{cmEqn1}-\ref{cmEqn4}, we obtain the following equations for the pinhole camera projection model, with zero lens distortion. 
+First we introduce the basic idea of the well-known DLT calibration method proposed by \cite{}. Since the distortion coefficients are usually small, we assume that the distortion coefficients $k_1 = k_2 = p_1 = p_2 = 0$ at the initialization stage. Combining equations \ref{cmEqn1}-\ref{cmEqn4}, we obtain the following equations for the pinhole camera projection model, with zero lens distortion. 
 \begin{eqnarray}
-\mu \mathbf{m} &=& P \mathbf{X}^w \\
-P &=& K 
+\mu \mathbf{m} &=& \mathbf{P} 
+\arraycolsep=1.5pt%
 \begin{bmatrix}
-R & t
-\end{bmatrix}
+	\begin{array}{c}
+	\mathbf{X}^w_i \\ 1
+	\end{array}
+\end{bmatrix} \\
+\mathbf{P} &=& \mathbf{K} 
+\begin{bmatrix}
+\mathbf{R} & \mathbf{t}
+\end{bmatrix} 
 \end{eqnarray}
-where $\mu$ is a scale factor. Given a set of known 3D points $\mathbf{X}^w_i = (X_i, Y_i, Z_i, 1)^\top$ and their corresponding image points $\mathbf{m}_i = (u_i, v_i, 1)$ from a single image. $P$ can be solved from the following equation system 
+where $\mu$ is a scale factor. Given a set of known 3D points $\mathbf{X}^w_i = (X_i, Y_i, Z_i)^\top$ and their corresponding image points $\mathbf{m}_i = (u_i, v_i, 1)$ from a single image. $P$ can be solved from the following equation system 
 \begin{equation}
-\mathbf{m}_i \times P \mathbf{X}^w_i= 0, \forall i
+\mathbf{m}_i \times \mathbf{P} 
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	\mathbf{X}^w_i \\ 1
+	\end{array}
+\end{bmatrix}
+ = 0, \forall i
 \end{equation}
-The first 3 columns of $P$ is equal to $K R$, where $R$ is the rotation matrix of the camera when capture the single image. From equation \ref{kEqn}, we know $K$ is a upper-triangular matrix. Thus, $K$ and $R$ can be obtained by executing an RQ-decomposition (a variation of the well-known QR decomposition) on the first 3 columns of $P$ and $t$ can be extracted from $P$. After we obtain these initial estimation for the camera parameters, a non-linear refinement can be executed to obtain the final estimation of the camera parameters. The refinement starts from the initial estimated $K$, $R$, $t$ and zero distortion. It varies these parameters to minimize reprojection error of the 3D point $\mathbf{X}^w$. The summarized reprojection error is formed as follows: 
+The first 3 columns of $P$ is equal to $K R$, where $R$ is the rotation matrix of the camera when capture the single image. From equation \ref{kEqn}, we know $K$ is a upper-triangular matrix. Thus, $K$ and $R$ can be obtained by executing an RQ-decomposition (a variation of the well-known QR decomposition) on the first 3 columns of $P$ and $t$ can be extracted from $P$. In addition, some techniques of linearly solving the radial lens distortion can be found in \cite{}. 
+
+After we obtain these initial estimation for the camera parameters, a non-linear refinement can be executed to obtain the final estimation of the camera parameters. The refinement starts from the initial estimated $K$, $R$, $t$ and zero distortion. It varies these parameters to minimize reprojection error of the 3D point $\mathbf{X}^w$. The summarized reprojection error is formed as follows: 
 \begin{equation}
-\sum_{\forall i} \left \| \mathbf{m}_i - \hat{\mathbf{m}}_i(\mathbf{X}^c_i, R, t, K, k_1, k_2, p_1, p_2) \right \|^2
+\sum_{\forall i} \left \| \mathbf{m}_i - \hat{\mathbf{m}}_i(\mathbf{X}^c_i, \mathbf{R}, \mathbf{t}, \mathbf{K}, k_1, k_2, p_1, p_2) \right \|^2
+\label{dltOptEqn}
 \end{equation}
-where $\hat{\mathbf{m}}_i(\star)$ denotes the camera projection procedure formed by equations \ref{cmEqn1}-\ref{cmEqn4}. If multiple images of a calibration object is available, we can initialize the calibration using one image and then minimize the reprojection error of all the images. 
+where $\hat{\mathbf{m}}_i(\star)$ denotes the camera projection procedure formed by equations \ref{cmEqn1}-\ref{cmEqn4}. If multiple images of a calibration object is available, we can initialize the calibration using one image and then minimize the reprojection error of all the images. Thus the summarized reprojection error is formed as: 
+\begin{equation}
+\sum_{\forall i, \forall j} \left \| \mathbf{m}_{i, j} - \hat{\mathbf{m}}_{i, j} (\mathbf{X}^c_{i, j}, \mathbf{R}_i, \mathbf{t}_i, \mathbf{K}, k_1, k_2, p_1, p_2) \right \|^2
+\label{dltAllOptEqn}
+\end{equation}
+Here $i$ is used to index different images and $j$ is used to index different points. 
 %TODO Degenerated case. 
+%TODO DLT toolboxes. 
 
 \subsubsection{Zhang's Method for Pinhole Camera Calibration}
+The most widely used calibration method for the pinhole camera model is the method proposed by \cite{zhang2000flexible}. We introduce the basic idea for this method at the initialization stage with zero lens distortion $k_1 = k_2 = p_1 = p_2 = 0$ assumed. This method only requires a plane as the calibration object. Define the $xy$plane of world coordinate system to be aligned with the calibration pattern, for example the chessboard grids. Then 3D world point can be denoted as $\mathbf{X}^w = [X^w, Y^w, 0, 1]^\top$. Denote $\mathbf{R} = [\mathbf{r}_1, \mathbf{r}_2, \mathbf{r}_3]$, we can write the camera transform as: 
+\begin{equation}
+\begin{split}
+\mu \mathbf{m} = \mathbf{K}
+\begin{bmatrix}
+\mathbf{R} & \mathbf{t}
+\end{bmatrix}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	\mathbf{X}^w \\ 1
+	\end{array}
+\end{bmatrix}
+= \mathbf{K}
+\begin{bmatrix}
+\mathbf{r}_1 & \mathbf{r}_2 & \mathbf{r}_3 & \mathbf{t}
+\end{bmatrix}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	X^w \\ Y^w \\ 0 \\ 1
+	\end{array}
+\end{bmatrix}\\
+= \mathbf{K}
+\begin{bmatrix}
+\mathbf{r}_1 & \mathbf{r}_2 & \mathbf{t}
+\end{bmatrix}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	X^w \\ Y^w \\ 1
+	\end{array}
+\end{bmatrix}
+=\mathbf{H}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	X^w \\ Y^w \\ 1
+	\end{array}
+\end{bmatrix}
+\end{split}
+\end{equation}
+where $\mathbf{H} = [\mathbf{h}_1, \mathbf{h}_2, \mathbf{h}_3]$ is a homography from the calibration pattern plane to the image plane. By stacking a set of point correspondences between the calibration pattern and the image, $\mathbf{H}$ can be solved up to an unknown scale. Given that $\mathbf{r}_1$ and $\mathbf{r}_1$ is two columns of a rotation matrix. We have the following constraints: 
+\begin{eqnarray}
+\mathbf{h}_1^\top \mathbf{K}^{-\top} \mathbf{K}^{-1} \mathbf{h}_2 &=& 0 \\
+\mathbf{h}_1^\top \mathbf{K}^{-\top} \mathbf{K}^{-1} \mathbf{h}_1 &=& \mathbf{h}_2^\top \mathbf{K}^{-\top} \mathbf{K}^{-1} \mathbf{h}_2
+\end{eqnarray}
+where $\mathbf{r}_1 \sim \mathbf{K}^{-1} \mathbf{h}_1$ and $\mathbf{r}_2 \sim \mathbf{K}^{-1} \mathbf{h}_2$, both with a same unknown scale. The above are two linear constraints on matrix $\mathbf{K}^{-\top} \mathbf{K}^{-1}$. If we have $N \geq 3$ images taken at different positions, $\mathbf{K}^{-\top} \mathbf{K}^{-1}$ can be uniquely solved by forming a linear system using $\mathbf{H}$ from different images. 
 
-\subsubsection{Generic Camera Calibration}
+In addition, some techniques of linearly solving the radial lens distortion can be found in \cite{zhang2000flexible}. After the initial calibration estimation is obtained, a refinement can be executed similarly to equation \ref{dltAllOptEqn}. 
+
+\subsubsection{Mei's Method for Catadioptric Camera Calibration}
+\cite{mei2007single} proposes a method for easily calibrating the catadioptric camera. The method firstly assumes $\xi = 1$, $k_1 = k_2 = p_1 = p_2 = 0$, $\gamma_1 = \gamma_2$ and the principal point $[u_0, v_0]^\top$ to be at the center of the image. For an image point $\mathbf{m} = [u, v, 1]^\top$, its corresponding normalized image point $\mathbf{x}'$ can be obtained as:
+\begin{eqnarray}
+x' = (u - u_0) / \gamma \\
+y' = (v - v_0) / \gamma
+\end{eqnarray}
+Substitute $x'$ and $y'$ to equations \ref{liftEqn1} and \ref{liftEqn2}, we obtain: 
+\begin{equation}
+\mathbf{X}^c \sim \mathbf{X}^s \sim
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	u - u_0 \\ v - v_0 \\ \cfrac{\gamma}{2} - \cfrac{1}{2 \gamma} \rho^2
+	\end{array}
+\end{bmatrix} 
+\end{equation}
+where $\rho^2 = (u - u_0)^2 + (v - v_0)^2$. Thus for an image point $\mathbf{m}$, its corresponding 3D ray is obtained In \cite{mei2007single}, the author selects a set of point located on a line on the chessboard and stacks their corresponding rays in a matrix as:
+\begin{equation}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{ccc}
+	u_1 - u_0\  & v_1 - v_0\  & \cfrac{\gamma}{2} - \cfrac{1}{2 \gamma} \rho_1^2 \\
+	u_2 - u_0\  & v_2 - v_0\  & \cfrac{\gamma}{2} - \cfrac{1}{2 \gamma} \rho_2^2 \\
+	&\cdots	&
+	\end{array}
+\end{bmatrix} 
+\end{equation}  
+Since the selected points are on a line in the 3D space, their corresponding rays are on a same plane. Thus the above matrix should have a rank of 2. By enforcing this rank constraints, $\gamma$ can be solved. The camera poses $\mathbf{R}$ and $\mathbf{t}$ for each image can be initialized using the PnP (??) \cite{} algorithm. 
+
+After we obtain the initial values of both intrinsic parameters and the camera pose with respect to the chessboard, an overall refinement can be executed to compute the final calibration result similarly to equation \ref{dltAllOptEqn}. 
+
+Mei's method is a very easy-to-use calibration technique for catadioptric camera model. \cite{mei2007single} also shows that it can also be used to calibrate wide-angle and fisheye camera accurately. The only drawback is that it requires points on a line on the calibration pattern to initialize the focal length. This is not applicable for our proposed pattern with random noise, where no line structure is available. In section \ref{}, we will resolve this drawback by selecting a different initialization technique. 
+
+\subsubsection{Scaramuzza's Method for Generic Camera Calibration}
 
 
 We can easily extend the above pinhole camera model to generic cameras by using different $f(x, y)$. We consider the central catadioptric model to model generic cameras here. A central catadioptric camera system is usually made up of a pinhole camera and a curved mirror. Typical shapes of the mirror include . Figure \ref{} shows a photo of a catadioptric system with a hyperbola shaped mirror. 
