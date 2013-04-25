@@ -303,6 +303,7 @@ where $\mu$ is a scale factor. Given a set of known 3D points $\mathbf{X}^w_i = 
 	\end{array}
 \end{bmatrix}
  = 0, \forall i
+\label{dltLS}
 \end{equation}
 The first 3 columns of $P$ is equal to $K R$, where $R$ is the rotation matrix of the camera when capture the single image. From equation \ref{kEqn}, we know $K$ is a upper-triangular matrix. Thus, $K$ and $R$ can be obtained by executing an RQ-decomposition (a variation of the well-known QR decomposition) on the first 3 columns of $P$ and $t$ can be extracted from $P$. In addition, some techniques of linearly solving the radial lens distortion can be found in \cite{}. 
 
@@ -316,8 +317,7 @@ where $\hat{\mathbf{m}}_i(\star)$ denotes the camera projection procedure formed
 \sum_{\forall i, \forall j} \left \| \mathbf{m}_{i, j} - \hat{\mathbf{m}}_{i, j} (\mathbf{X}^c_{i, j}, \mathbf{R}_i, \mathbf{t}_i, \mathbf{K}, k_1, k_2, p_1, p_2) \right \|^2
 \label{dltAllOptEqn}
 \end{equation}
-Here $i$ is used to index different images and $j$ is used to index different points. 
-%TODO Degenerated case. 
+Here $i$ is used to index different images and $j$ is used to index different points. The DLT method requires calibration object such as a calibration cube shown in figure \ref{}. If 3D points are only located on same plane, as is the case for all the planar calibration object, the DLT method will degenerate and there is no unique solution. We provide a simple illustration for this degeneration. If 3D points are all on a plane, we can denote these points as $[X^w, Y^w, 0, 1]^\top$. In equation \ref{dltLS}, the third column of $\mathbf{P}$ is always multiplied by 0 and can not be solved. 
 %TODO DLT toolboxes. 
 
 \subsubsection{Zhang's Method for Pinhole Camera Calibration}
@@ -387,6 +387,7 @@ Substitute $x'$ and $y'$ to equations \ref{liftEqn1} and \ref{liftEqn2}, we obta
 	u - u_0 \\ v - v_0 \\ \cfrac{\gamma}{2} - \cfrac{1}{2 \gamma} \rho^2
 	\end{array}
 \end{bmatrix} 
+\label{meiRayEqn}
 \end{equation}
 where $\rho^2 = (u - u_0)^2 + (v - v_0)^2$. Thus for an image point $\mathbf{m}$, its corresponding 3D ray is obtained In \cite{mei2007single}, the author selects a set of point located on a line on the chessboard and stacks their corresponding rays in a matrix as:
 \begin{equation}
@@ -406,7 +407,77 @@ After we obtain the initial values of both intrinsic parameters and the camera p
 Mei's method is a very easy-to-use calibration technique for catadioptric camera model. \cite{mei2007single} also shows that it can also be used to calibrate wide-angle and fisheye camera accurately. The only drawback is that it requires points on a line on the calibration pattern to initialize the focal length. This is not applicable for our proposed pattern with random noise, where no line structure is available. In section \ref{}, we will resolve this drawback by selecting a different initialization technique. 
 
 \subsubsection{Scaramuzza's Method for Generic Camera Calibration}
+Scaramuzza \cite{scaramuzza2006toolbox} proposes a more general model than Mei's methd. The calibration method in \cite{scaramuzza2006toolbox} does not assume any specific projection model for the camera. In analogy to equation \ref{meiRayEqn}, \cite{scaramuzza2006toolbox} parametrize a 3D ray corresponding to a image point $\mathbf{m}$ using polynomial approximation as: 
+\begin{equation}
+\mathbf{X}^c \sim \mathbf{X}^s \sim
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	u - u_0 \\ v - v_0 \\ a_0 + a_1 \rho + \cdots + a_n \rho^n
+	\end{array}
+\end{bmatrix} 
+\label{scaraRayEqn}
+\end{equation}
+where $\rho = \sqrt{(u - u_0)^2 + (v - v_0)^2}$ and $a_0, \cdots, a_n$ are a set of distortion parameters to be estimated. The calibration method uses planar calibration pattern and is initialized via the following steps. 
+\begin{equation}
+\begin{split}
+\mathbf{X}^c = 
+\begin{bmatrix}
+\mathbf{R} & \mathbf{t}
+\end{bmatrix}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	\mathbf{X}^w \\ 1
+	\end{array}
+\end{bmatrix}
+= 
+\begin{bmatrix}
+\mathbf{r}_1 & \mathbf{r}_2 & \mathbf{r}_3 & \mathbf{t}
+\end{bmatrix}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	X^w \\ Y^w \\ 0 \\ 1
+	\end{array}
+\end{bmatrix}
+= 
+\begin{bmatrix}
+\mathbf{r}_1 & \mathbf{r}_2 & \mathbf{t}
+\end{bmatrix}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	X^w \\ Y^w \\ 1
+	\end{array}
+\end{bmatrix}
+\end{split}
+\end{equation}
+Combining with equation \ref{scaraRayEqn}, we have: 
+\begin{equation}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	u - u_0 \\ v - v_0 \\ a_0 + a_1 \rho + \cdots + a_n \rho^n
+	\end{array}
+\end{bmatrix} 
+\times
+\begin{bmatrix}
+\mathbf{r}_1 & \mathbf{r}_2 & \mathbf{t}
+\end{bmatrix}
+\arraycolsep=1.5pt%
+\begin{bmatrix}
+	\begin{array}{c}
+	X^w \\ Y^w \\ 1
+	\end{array}
+\end{bmatrix}
+= 0
+\end{equation}
+By stacking multiple point correspondences, we can solve $\mathbf{r}_1$, $\mathbf{r}_2$, $\mathbf{t}$ and $a_0, \cdots, a_n$ from this equation. The result can be then refined similarly to equation \ref{dltAllOptEqn}. Scaramuzza's method does not require any line structure in the calibration pattern for the initialization stage. This advantage suits well for our proposed random noise calibration pattern. The drawback of Scaramuzza's generic camera model is that it does not have a closed-form projection transform from 3D point to image point. 
 
+In the following sections, we propose a calibration method for our proposed calibration pattern, based on techniques from the above introduced approaches. 
+
+\section{Calibration Initialization}
 
 We can easily extend the above pinhole camera model to generic cameras by using different $f(x, y)$. We consider the central catadioptric model to model generic cameras here. A central catadioptric camera system is usually made up of a pinhole camera and a curved mirror. Typical shapes of the mirror include . Figure \ref{} shows a photo of a catadioptric system with a hyperbola shaped mirror. 
 
@@ -435,7 +506,6 @@ f(u, v) = a_0 + \cdots + a_n \rho^n
 Equation \ref{polynEqn} does not have a closed-form inverse transform. In the proposed toolbox, we use the unified projection model in \cite{mei2007single} to model a varying range of cameras which include but are not limited to normal, wide-angle, fish-eye and catadioptric types. This model uses the same intrinsic parameters that the pinhole projection model uses: the focal length $(\gamma_1, \gamma_2)$, aspect ratio $s$, principal point $(u_0, v_0)$, and radial and tangent lens distortion parameters $(k_1, k_2, p_1, p_2)$. The model uses one additional parameter $\xi$ to model the omnidirectional camera effect. 
 
 
-\section{Calibration Initialization}
 
 The unified projection model of \cite{mei2007single} assumes the catadioptric coefficient $\xi = 1$ for initialization, and then, refines the estimated intrinsics and extrinsics. The initialization is very simple and can generate a good initial guess for all parameters. The limitation of the initialization is that it requires a known projection of a straight line on the pattern. Such a projection is easy to obtain for a chessboard but difficult for our proposed pattern. Fortunately, the initialization can be solved by substituting the unified projection model into the initialization of the Taylor projection model of \cite{scaramuzza2006toolbox}.
 
