@@ -1,10 +1,9 @@
-images/
 *.aux
 *.bbl
 *.blg
 *.dvi
 *.gz
 *.log
-*.pdf
 *.toc
+main.pdf
 
