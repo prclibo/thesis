@@ -16,14 +16,35 @@
 A Multiple-Camera System Calibration Toolbox
 }
 
-\author{
-Bo Li \\ Advised by Kevin K\"oser and Marc Pollefeys\\
-Computer Vision and Geometry Group\\ ETH Zurich
-}
+%\author{
+%Bo Li \\ Advised by Kevin K\"oser and Marc Pollefeys\\
+%Computer Vision and Geometry Group\\ ETH Zurich
+%}
 
 \begin{document}
 
-\maketitle
+%\maketitle
+
+\begin{titlepage}
+\noindent \includegraphics[width=0.4\textwidth]{images/ethlogo-print.png}
+\vspace*{\fill}
+\begin{center}
+{\Huge \bf A Multiple-Camera System\\[12pt] Calibration Toolbox}\\[50pt]
+{\huge Bo Li}\\[30pt]
+\begin{tabular}{cl}
+\Large Advisors: & \Large Dr. Kevin K\"oser\\[8pt]
+& \Large Prof. Marc Pollefeys
+\end{tabular}
+\\[100pt]
+{\LARGE Master Thesis}\\[25pt]
+{\Large Computer Vision and Geometry Group}\\[8pt] 
+{\Large Department of Computer Science}\\[8pt]
+{\Large ETH Zurich}\\[40pt]
+{\Large 2013 May 25}
+\end{center}
+\vspace*{\fill}
+\end{titlepage}
+
 \tableofcontents
 
 \begin{abstract}
@@ -106,6 +127,8 @@ $\hat{\mathbf{m}}(\mathbf{X}^w, \mathbf{R}, \mathbf{t}, \mathcal{C})$, $\hat{\ma
 \end{supertabular}
 
 \chapter{Camera Model}
+Our proposed toolbox is applicable for camera systems composed of pinhole cameras, fish-eye cameras or wide-angle cameras. Generic camera models including the fish-eye and wide-angle camera models are modelled by the unified catadioptric camera model. In this chapter, we introduce some basic principles for the pinhole camera model, the fish-eye camera model and the catadioptric camera model. 
+
 \section{Pinhole Camera Model}
 \label{pinholeSec}
 We consider the most commonly used pinhole camera projection model first and introduces the notations. A 3D world point $\mathbf{X}^w = [X^w, Y^w, Z^w]^\top$ is firstly transformed to a 3D point in the camera coordinate system as $\mathbf{X}^c = [X^c, Y^c, Z^c]^\top$, and then projected onto a homogeneous image point $\mathbf{m} = [u, v]^\top$, via the following equations: 
@@ -511,7 +534,7 @@ This case could be detected by automatic model selection methods like the GRIC c
 \label{singleSec}
 
 \section{Introduction}
-The single-camera calibration estimates the camera intrinsics and the poses of the calibration pattern with respect to the camera's coordinate system. Methods for calibrating a single camera have been well studied in the past decades. The calibrated camera intrinsics and pattern poses for each single cameras can then be used in calibrating the multiple-camera system formed by these single cameras. 
+The single-camera calibration estimates the camera intrinsics and the poses of the calibration pattern with respect to the camera's coordinate system. Methods for calibrating a single camera have been well studied in the past decades. The calibrated camera intrinsics and pattern poses for each single cameras can then be used in calibrating the multiple-camera system formed by these single cameras. In this chapter, we firstly provide a brief introduction to some of the state-of-art single camera calibration methods and secondly illustrate the single camera calibration method used in our proposed toolbox. 
 
 
 
@@ -1187,22 +1210,6 @@ In the second experiment, we validate our toolbox on a four-camera system; neigh
 \section{Calibration of a Five-Camera System}
 The the third experiment, we validate our toolbox on a five-camera system made up of wide angle cameras. The cameras are mounted as a rig on a ski helmet, as is shown in figure \ref{cameraRigPhoto}b. The cameras are five GoPro 2 cameras, under wide angle mode. We take 5 videos from the cameras of a moving calibration pattern. The videos are then synchronized by aligning the audio signal. Figure \ref{cameraRigPhoto}b shows some sample images take from the videos. Each row corresponds to one camera. Each column corresponds to one timestamp after synchronization. The generic camera model is used for single camera calibration. Figure \ref{fiveCameraRigPlot} plots the 3D poses of both cameras and patterns. 
 
-
-\chapter{Conclusions}
-We have proposed a calibration technique using a feature descriptor-based calibration pattern. This technique can be used for calibrating multiple-camera systems. The calibration only requires that neighboring cameras can observe different parts of a suitably-sized calibration board at the same time. For most stereo camera system, inward-looking multiple-camera system and outward-looking multiple-camera system, this requirement is fulfilled easily. 
-
-We show our calibration to work successfully with different types of multiple-camera systems and produces reasonable calibration accuracy. A open-source Matlab toolbox based on our proposed method is available online at {\small{\url{https://sites.google.com/site/prclibo/toolbox}}}. 
-
-%\chapter{Acknowledgement}
-%The second author was funded by the DSO National Laboratories Postgraduate Scholarship. In addition, this work was supported in part by the European Community's Seventh Framework Programme (FP7/2007-2013) under grant \#269916 (V-Charge).
-
-\appendix
-\chapter{Multiple-Camera System Calibration Toolbox Documentation}
-
-See the next page for the documentation. Its online version is available at {\small{\url{https://sites.google.com/site/prclibo/toolbox/doc}}}
-
-\includepdf[pages=-, frame=true, scale=0.72, pagecommand={\thispagestyle{plain}}, trim=0.6in 0.6in 0.6in 0.6in, clip=true]{doc}
-
 \chapter{Some Explorations on Calibration Using a LCD Display}
 The flat screen and good brightness quality of LCD displays is very suitable for displaying calibration pattern. In this part, we show some explorations on using LCD displays for calibration. The main idea of exploiting a LCD display in calibration is to achieve more correspondences in calibration. 
 
@@ -1297,6 +1304,23 @@ Substituting the regressed $f(g, \alpha_x, \alpha_y)$ back to equation \ref{SSDO
 \bigskip
 In our experiment, the proposed refinement can significantly reduce the SSD error between the original pattern and the reprojected pattern. This reduced error implies a better calibration accuracy. For camera calibration task with super high accuracy demand, we suggest to use this proposed method to refinement the calibration. 
 \bibliographystyle{plain}
+
+
+\chapter{Conclusions}
+We have proposed a calibration technique using a feature descriptor-based calibration pattern. This technique can be used for calibrating multiple-camera systems. The calibration only requires that neighboring cameras can observe different parts of a suitably-sized calibration board at the same time. For most stereo camera system, inward-looking multiple-camera system and outward-looking multiple-camera system, this requirement is fulfilled easily. 
+
+We show our calibration to work successfully with different types of multiple-camera systems and produces reasonable calibration accuracy. A open-source Matlab toolbox based on our proposed method is available online at {\small{\url{https://sites.google.com/site/prclibo/toolbox}}}. 
+
+%\chapter{Acknowledgement}
+%The second author was funded by the DSO National Laboratories Postgraduate Scholarship. In addition, this work was supported in part by the European Community's Seventh Framework Programme (FP7/2007-2013) under grant \#269916 (V-Charge).
+
+\appendix
+\chapter{Multiple-Camera System Calibration Toolbox Documentation}
+
+See the next page for the documentation. Its online version is available at {\small{\url{https://sites.google.com/site/prclibo/toolbox/doc}}}
+
+\includepdf[pages=-, frame=true, scale=0.72, pagecommand={\thispagestyle{plain}}, trim=0.6in 0.6in 0.6in 0.6in, clip=true]{doc}
+
 \bibliography{main}
 
 
